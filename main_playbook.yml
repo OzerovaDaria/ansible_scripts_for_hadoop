@@ -1,0 +1,4 @@
+- name: hdfs setup
+  hosts: all
+  roles:
+    - role: hdfs

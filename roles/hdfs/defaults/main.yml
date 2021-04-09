@@ -1,0 +1,11 @@
+install_dir: /opt
+install_tmp_dir: /tmp/archive-download
+hadoop:
+  data_dir: /var/hadoop/data
+  name_dir: /var/hadoop/name
+  temp_dir: /var/hadoop/temp
+  install_dir: hadoop-3.2.1
+  download_location: https://downloads.apache.org/hadoop/common/
+  version: 3.2.1
+  archive: hadoop-3.2.1.tar.gz
+  profile_env: ~/.profile

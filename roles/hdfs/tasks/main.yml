@@ -1,0 +1,115 @@
+ - name: set hdfs fact 
+   set_fact: hdfs_installed=True
+
+ - name: update apt
+   become: true
+   apt: 
+    name: apt 
+    state: latest
+
+ - name: install OpenJDK 8
+   become: true
+   apt: 
+    name: openjdk-8-jdk 
+    state: latest
+
+ - name: create hadoop data directory
+   become: true
+   file:
+    path: "{{ hadoop.data_dir }}"
+    state: directory
+
+ - name: create hadoop name directory
+   become: true
+   file:
+    path: "{{ hadoop.name_dir }}"
+    state: directory
+
+ - name: create hadoop temp directory
+   become: true
+   file:
+    path: "{{ hadoop.temp_dir }}"
+    state: directory
+
+ - name: create install directory
+   become: true
+   file:
+    path: "{{ install_dir }}/{{ hadoop.install_dir }}"
+    state: directory
+
+ - name: create download directory
+   become: true
+   file:
+    path: "{{ install_tmp_dir }}"
+    state: directory
+  
+ - name: download hadoop
+   become: true
+   get_url: 
+     url: "{{ hadoop.download_location }}/hadoop-{{ hadoop.version }}/{{hadoop.archive}}"
+     dest: "{{ install_tmp_dir }}/{{ hadoop.archive }}"
+    
+ - name: extract the files to initiate the hadoop installation
+   become: true
+   shell: "tar xzf {{ install_tmp_dir }}/{{ hadoop.archive }} --strip 1 --directory {{ install_dir }}/{{ hadoop.install_dir }}"
+
+# Environment setup
+ - name: define the Hadoop environment variables
+   template:
+     src: hadoop_environment_variables.sh.j2 
+     dest: "{{ hadoop.profile_env }}"
+
+ - name: set core-site.xml file
+   become: true
+   template: 
+     src: core-site.xml.j2
+     dest: "{{ install_dir }}/{{ hadoop.install_dir }}/etc/hadoop/core-site.xml"
+
+ - name: edit hadoop-env.sh file
+   become: true
+   template:
+     src: hadoop-env.sh.j2
+     dest: "{{ install_dir }}/{{ hadoop.install_dir }}/etc/hadoop/hadoop-env.sh"
+
+ - name: edit hdfs-site.xml file 
+   become: true
+   template:
+     src: hdfs-site.xml.j2
+     dest: "{{ install_dir }}/{{ hadoop.install_dir }}/etc/hadoop/hdfs-site.xml"
+
+ - name: define MapReduce value 
+   become: true
+   template:
+     src: mapred-site.xml.j2
+     dest: "{{ install_dir }}/{{ hadoop.install_dir }}/etc/hadoop/mapred-site.xml"
+
+ - name: edit yarn-site.xml file
+   become: true
+   template:
+     src: yarn-site.xml.j2
+     dest: "{{ install_dir }}/{{ hadoop.install_dir }}/etc/hadoop/yarn-site.xml"
+
+ - name: change mode temp
+   become: true
+   shell: "chmod 0777 temp"
+   args:
+       chdir: "/var/hadoop"
+
+ - name: format hdfs
+   become: true
+   shell: "bin/hdfs namenode -format"
+   args:
+       chdir: "{{ install_dir }}/{{ hadoop.install_dir }}"
+
+ - name: create logs directory
+   become: true
+   file:
+    path: "{{ install_dir }}/{{ hadoop.install_dir }}"
+    state: directory
+
+ - name: change mode logs
+   become: true
+   shell: "chmod 0777 logs"
+   args:
+       chdir: "{{ install_dir }}/{{ hadoop.install_dir }}"
+
